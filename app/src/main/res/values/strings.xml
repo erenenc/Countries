@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Countries</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="home">Home</string>
+    <string name="saved">Saved</string>
+    <string name="fab_button">FAB</string>
+    <string name="country_code">Country Code :</string>
+    <string name="for_more_information">For More Information</string>
+    <string name="add_new_country">Add New Country</string>
+    <string name="exit">Exit</string>
+    <string name="enter_country_code">Enter Country Code</string>
+    <string name="search">Search</string>
+    <string name="back">Back</string>
+</resources>
