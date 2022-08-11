@@ -13,6 +13,7 @@ This app implements MVVM architecture. App consist of different fragments and 1 
 <p>User can add country to saved list by clicking star icon</p>
 <p>User can remove country from saved list by clicking star icon</p>
 
+![countries_ss_1](https://user-images.githubusercontent.com/62806425/184225306-afd1229b-e521-4833-a4ce-5516af0c9462.png)
 
 
 ## Tech Stack
