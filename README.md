@@ -22,6 +22,7 @@ This app implements MVVM architecture. App consist of different fragments and 1 
 * Realm
 * Navigation Component
 * View Binding
+* Navigation Component
 * RecyclerView
 * Shared Preferences
 * Retrofit
