@@ -36,8 +36,10 @@ class HomePageFragment : Fragment() {
     private val binding get() = _binding!!
     lateinit var theAdapter : CountriesAdapter
     private val countryViewModel : CountryViewModel by activityViewModels()
-    val theRealm by lazy { RealmInstanceHelper.getInstance() }
     val countryListPrefHelper by lazy { SharedPreferenceHelper(requireContext()) }
+    var allCountryList = arrayListOf<Any>()
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,6 +52,8 @@ class HomePageFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        allCountryList.clear()
 
         theAdapter = CountriesAdapter(requireContext(), this@HomePageFragment)
         theAdapter.notifyDataSetChanged()
@@ -72,13 +76,8 @@ class HomePageFragment : Fragment() {
                 isChecked: Boolean,
                 recyclerViewList: ArrayList<Any>
             ) {
-                theRealm.executeTransaction { theRealm ->
-                    val country = theRealm.where<DataRM>()
-                        .equalTo("code", (recyclerViewList[position] as Data).code)
-                        .findFirst()
-                    country?.isSaved = isChecked
+                countryViewModel.updateItem((recyclerViewList[position] as Data).code, isChecked)
 
-                }
                 (recyclerViewList[position] as Data).isSaved = isChecked
                 theAdapter.notifyItemChanged(position)
             }
@@ -87,13 +86,8 @@ class HomePageFragment : Fragment() {
         if (countryListPrefHelper.isRemoteApiDataFetched()) {
 
             // if remote api data is fetched and written to realm db, no longer fetch data via api and use realm db instead
-            val countryListDMFromRealm = arrayListOf<Any>()
-            val countryListRMFromRealm = theRealm.where<DataRM>().findAll()
-            countryListRMFromRealm.forEach {
-                countryListDMFromRealm.add(RealmModelTypeConverter.getCountryDataModel(it))
-            }
-            countryListDMFromRealm.add(1)
-            theAdapter.setData(countryListDMFromRealm)
+            allCountryList = countryViewModel.getAllCountries()
+            theAdapter.setData(allCountryList)
 
         } else {
             lifecycleScope.launchWhenCreated {
@@ -120,7 +114,7 @@ class HomePageFragment : Fragment() {
                     countryList.add(1)
                     theAdapter.setData(countryList)
 
-                    writeToRealm(response.body()!!.data)
+                    countryViewModel.writeCountriesToRealm(response.body()!!.data)
                     countryListPrefHelper.setRemoteApiDataFetched(true)
 
                 } else {
@@ -133,14 +127,6 @@ class HomePageFragment : Fragment() {
         binding.homePageRecycler.apply {
             setHasFixedSize(true)
             adapter = theAdapter
-        }
-    }
-
-    private fun writeToRealm(data: List<Data>) {
-        data.forEach {
-            theRealm.executeTransaction{ theRealm ->
-                theRealm.copyToRealmOrUpdate(RealmModelTypeConverter.getCountryRealmModel(it))
-            }
         }
     }
 

@@ -27,8 +27,7 @@ class SavedFragment : Fragment() {
     private val binding get() = _binding!!
     lateinit var theAdapter : CountriesAdapter
     private val countryViewModel : CountryViewModel by activityViewModels()
-    val theRealm by lazy { RealmInstanceHelper.getInstance() }
-    val savedCountryList = arrayListOf<Any>()
+    var savedCountryList = arrayListOf<Any>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,11 +47,7 @@ class SavedFragment : Fragment() {
 
         savedCountryList.clear()
 
-        val savedCountryRealmList = theRealm.where<DataRM>().equalTo("isSaved", true).findAll()
-        savedCountryRealmList.forEach {
-            savedCountryList.add(RealmModelTypeConverter.getCountryDataModel(it))
-        }
-        savedCountryList.add(1)
+        savedCountryList = countryViewModel.getAllSavedCountries()
 
         theAdapter = CountriesAdapter(requireContext(), this@SavedFragment)
         theAdapter.setData(savedCountryList)
@@ -76,15 +71,10 @@ class SavedFragment : Fragment() {
                 isChecked: Boolean,
                 recyclerViewList: ArrayList<Any>
             ) {
-                theRealm.executeTransaction { theRealm ->
-                    val country = theRealm.where<DataRM>()
-                        .equalTo("code", (recyclerViewList[position] as Data).code)
-                        .findFirst()
-                    country?.isSaved = isChecked
 
-                }
+                countryViewModel.updateItem((recyclerViewList[position] as Data).code, isChecked)
+
                 removeItemFromList(recyclerViewList[position] as Data)
-
             }
 
         })
