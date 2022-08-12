@@ -12,6 +12,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import coil.ImageLoader
@@ -20,12 +21,14 @@ import coil.request.ImageRequest
 import com.bumptech.glide.Glide
 import com.caverock.androidsvg.SVG
 import com.example.countries.MainActivity
+import com.example.countries.R
 import com.example.countries.RetrofitInstance
 import com.example.countries.databinding.FragmentDetailBinding
 import com.example.countries.model.CountryDetail
 import com.example.countries.model.Data
 import com.example.countries.realm.RealmInstanceHelper
 import com.example.countries.realmDataModel.DataRM
+import com.example.countries.viewmodels.CountryViewModel
 import io.realm.kotlin.where
 import retrofit2.HttpException
 import java.io.IOException
@@ -40,7 +43,8 @@ class DetailFragment : Fragment() {
     private val binding get() = _binding!!
     private val countryCode by lazy { DetailFragmentArgs.fromBundle(requireArguments()).code }
     private var wikiDataId = ""
-    val theRealm by lazy { RealmInstanceHelper.getInstance() }
+    private val countryViewModel : CountryViewModel by activityViewModels()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,19 +107,15 @@ class DetailFragment : Fragment() {
         (requireActivity() as MainActivity).binding.toolbarStar.setOnCheckedChangeListener { buttonview, isChecked ->
 
             if (buttonview.isPressed) {
-                theRealm.executeTransaction { theRealm ->
-                    val country = theRealm.where<DataRM>()
-                        .equalTo("code", countryCode)
-                        .findFirst()
-                    country?.isSaved = isChecked
-                }
+                countryViewModel.updateItem(countryCode, isChecked)
+
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        val theCountry = theRealm.where<DataRM>().equalTo("code", countryCode).findFirst()
+        val theCountry = countryViewModel.getSingleCountry(countryCode)
         (requireActivity() as MainActivity).binding.toolbarStar.visibility = View.VISIBLE
         (requireActivity() as MainActivity).binding.toolbarStar.isChecked = theCountry?.isSaved!!
         (requireActivity() as MainActivity).binding.toolbarBackArrow.visibility = View.VISIBLE
@@ -125,11 +125,13 @@ class DetailFragment : Fragment() {
         super.onStop()
         (requireActivity() as MainActivity).binding.toolbarStar.visibility = View.GONE
         (requireActivity() as MainActivity).binding.toolbarBackArrow.visibility = View.GONE
+        (requireActivity() as MainActivity).binding.toolbarText.text = resources.getString(R.string.app_name)
 
     }
 
     private fun showDetails(countryDetail: CountryDetail) {
 
+        (requireActivity() as MainActivity).binding.toolbarText.text = countryDetail.data.name
         binding.countryDetailText2.text = countryDetail.data.code
         wikiDataId = countryDetail.data.wikiDataId
 
